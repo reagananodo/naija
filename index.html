@@ -1,0 +1,259 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAIJA RUN - Welcome</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="auth-page">
+
+    <div class="overlay"></div>
+
+    <div class="auth-container">
+
+        <div class="game-logo">
+            <h1>NAIJA RUN</h1>
+            <p>THE ULTIMATE LAGOS CHASE</p>
+        </div>
+
+        <div class="auth-box">
+
+            <div class="tabs">
+                <button class="active" type="button" onclick="showForm('login')">
+                    LOGIN
+                </button>
+
+                <button type="button" onclick="showForm('register')">
+                    CREATE ACCOUNT
+                </button>
+            </div>
+
+            <!-- LOGIN FORM -->
+
+            <form id="loginForm">
+
+                <h2>WELCOME BACK!</h2>
+                <p>Ready to hit the Lagos streets again?</p>
+
+                <input type="text" id="loginUsername"
+                       placeholder="Username" required>
+
+                <input type="password" id="loginPassword"
+                       placeholder="Password" required>
+
+                <button class="submit-btn" type="submit">
+                    LOGIN & PLAY
+                </button>
+
+                <p class="switch-text">
+                    New to the streets?
+                    <span onclick="showForm('register')">
+                        Create account
+                    </span>
+                </p>
+
+            </form>
+
+
+            <!-- CREATE ACCOUNT FORM -->
+
+            <form id="registerForm" style="display:none">
+
+                <h2>JOIN THE STREETS!</h2>
+                <p>Create your Naija Run account.</p>
+
+                <input type="text" id="registerUsername"
+                       placeholder="Choose username" required>
+
+                <input type="email" id="registerEmail"
+                       placeholder="Email address" required>
+
+                <input type="password" id="registerPassword"
+                       placeholder="Create password"
+                       minlength="8" required>
+
+                <input type="password" id="confirmPassword"
+                       placeholder="Confirm password" required>
+
+                <button class="submit-btn" type="submit">
+                    CREATE ACCOUNT
+                </button>
+
+                <p class="switch-text">
+                    Already have an account?
+                    <span onclick="showForm('login')">
+                        Login
+                    </span>
+                </p>
+
+            </form>
+
+            <p id="authMessage"></p>
+
+        </div>
+
+        <div class="footer">
+            <p>© 2026 NAIJA RUN</p>
+            <p>MADE FOR THE STREETS 🇳🇬</p>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+
+// SWITCH BETWEEN LOGIN AND REGISTER
+
+function showForm(type) {
+
+    const login = type === "login";
+
+    document.getElementById("loginForm").style.display =
+        login ? "block" : "none";
+
+    document.getElementById("registerForm").style.display =
+        login ? "none" : "block";
+
+    const tabs = document.querySelectorAll(".tabs button");
+
+    tabs[0].classList.toggle("active", login);
+    tabs[1].classList.toggle("active", !login);
+
+    document.getElementById("authMessage").textContent = "";
+
+}
+
+
+// GET SAVED ACCOUNTS
+
+function getAccounts() {
+
+    try {
+        return JSON.parse(
+            localStorage.getItem("naijaAccounts") || "{}"
+        );
+    } catch (error) {
+        return {};
+    }
+
+}
+
+
+// SHOW MESSAGE
+
+function showMessage(message) {
+
+    document.getElementById("authMessage").textContent = message;
+
+}
+
+
+// OPEN MAIN GAME MENU
+
+function openGame(username) {
+
+    sessionStorage.setItem("naijaUser", username);
+
+    window.location.assign("./game.html");
+
+}
+
+
+// CREATE ACCOUNT
+
+document.getElementById("registerForm").addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const username = document.getElementById("registerUsername").value.trim();
+
+    const email = document.getElementById("registerEmail").value.trim();
+
+    const password = document.getElementById("registerPassword").value;
+
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+
+    if (username.length < 3) {
+        showMessage("Username must contain at least 3 characters!");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        showMessage("Passwords do not match!");
+        return;
+    }
+
+    const accounts = getAccounts();
+
+    const userKey = username.toLowerCase();
+
+    if (accounts[userKey]) {
+        showMessage("Username already exists!");
+        return;
+    }
+
+
+    accounts[userKey] = {
+        username: username,
+        email: email,
+        password: password
+    };
+
+
+    try {
+
+        localStorage.setItem(
+            "naijaAccounts",
+            JSON.stringify(accounts)
+        );
+
+        openGame(username);
+
+    } catch (error) {
+
+        showMessage("Could not save account. Check browser storage.");
+
+    }
+
+});
+
+
+// LOGIN EXISTING ACCOUNT
+
+document.getElementById("loginForm").addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    const username = document.getElementById("loginUsername").value.trim();
+
+    const password = document.getElementById("loginPassword").value;
+
+    const accounts = getAccounts();
+
+    const account = accounts[username.toLowerCase()];
+
+
+    if (!account || account.password !== password) {
+
+        showMessage("Incorrect username or password!");
+
+        return;
+
+    }
+
+
+    openGame(account.username);
+
+});
+
+</script>
+
+</body>
+</html>
